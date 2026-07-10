@@ -7,7 +7,7 @@ from werkzeug.security import generate_password_hash
 # Import models to ensure they are registered with SQLAlchemy
 from models.user import User
 from models.trek import Trek
-from models.booking import bookings 
+from models.booking import Booking
 from models.profile import Profile
 
 
