@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard - Trekista</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='admin.css') }}">
+    <style>
+        /* Supplementary styling */
+        .flash-messages {
+            margin-bottom: 20px;
+        }
+        .flash-message {
+            padding: 12px;
+            border-radius: 6px;
+            margin-bottom: 10px;
+            font-size: 14px;
+            font-weight: 500;
+            text-align: center;
+        }
+        .flash-success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .flash-danger {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        .flash-info {
+            background-color: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+        .btn-sm {
+            padding: 6px 12px;
+            font-size: 13px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: bold;
+            border: none;
+            text-decoration: none;
+            display: inline-block;
+        }
+        .btn-primary {
+            background-color: #0099ff;
+            color: white;
+        }
+        .btn-primary:hover {
+            background-color: #007ed6;
+        }
+        .btn-success {
+            background-color: #28a745;
+            color: white;
+        }
+        .btn-success:hover {
+            background-color: #218838;
+        }
+        .btn-danger {
+            background-color: #dc3545;
+            color: white;
+        }
+        .btn-danger:hover {
+            background-color: #c82333;
+        }
+        .btn-warning {
+            background-color: #ffc107;
+            color: #212529;
+        }
+        .btn-warning:hover {
+            background-color: #e0a800;
+        }
+        .btn-secondary {
+            background-color: #6c757d;
+            color: white;
+        }
+        .btn-secondary:hover {
+            background-color: #5a6268;
+        }
+        .badge {
+            display: inline-block;
+            padding: 4px 8px;
+            font-size: 12px;
+            font-weight: bold;
+            border-radius: 4px;
+            text-transform: uppercase;
+        }
+        .badge-pending {
+            background-color: #ffeeba;
+            color: #856404;
+        }
+        .badge-approved, .badge-open, .badge-active {
+            background-color: #c3e6cb;
+            color: #155724;
+        }
+        .badge-closed {
+            background-color: #f5c6cb;
+            color: #721c24;
+        }
+        .badge-completed {
+            background-color: #d1ecf1;
+            color: #0c5460;
+        }
+        .badge-blacklisted {
+            background-color: #343a40;
+            color: white;
+        }
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 40px;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #bde5ff;
+            padding-bottom: 10px;
+        }
+        .section-header h2 {
+            color: #004f8c;
+            margin: 0;
+        }
+        .assign-form {
+            display: flex;
+            gap: 5px;
+            align-items: center;
+            justify-content: center;
+        }
+        .assign-select {
+            padding: 6px;
+            border: 1px solid #bde5ff;
+            border-radius: 6px;
+            background-color: white;
+            font-size: 13px;
+        }
+    </style>
+</head>
+<body>
+
+<!-- Sidebar -->
+<div class="sidebar">
+    <h2>Trekista</h2>
+    <ul>
+        <li><a href="{{ url_for('admin.dashboard') }}">🏠 Dashboard</a></li>
+        <li><a href="#treks-section">🥾 Manage Treks</a></li>
+        <li><a href="#staff-section">👨‍💼 Trek Staff</a></li>
+        <li><a href="#users-section">👥 Users</a></li>
+        <li><a href="/">🌐 Public Site</a></li>
+        <li><a href="{{ url_for('auth.logout') }}" style="color: #ff6666;">🚪 Logout</a></li>
+    </ul>
+</div>
+
+<!-- Main Content -->
+<div class="main">
+    <header>
+        <h1>Admin Control Panel</h1>
+        <p>Welcome, {{ current_user.name }} (Administrator)</p>
+    </header>
+
+    <!-- Flash Messages -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        <div class="flash-messages">
+          {% for category, message in messages %}
+            <div class="flash-message flash-{{ category }}">{{ message }}</div>
+          {% endfor %}
+        </div>
+      {% endif %}
+    {% endwith %}
+
+    <!-- Statistics -->
+    <div class="cards">
+        <div class="card">
+            <h3>Total Treks</h3>
+            <h2>{{ total_treks }}</h2>
+        </div>
+        <div class="card">
+            <h3>Total Staff</h3>
+            <h2>{{ total_staff }}</h2>
+        </div>
+        <div class="card">
+            <h3>Total Users</h3>
+            <h2>{{ total_users }}</h2>
+        </div>
+        <div class="card">
+            <h3>Pending Approvals</h3>
+            <h2 style="color: {% if pending_approvals > 0 %}#ffc107{% else %}#333{% endif %};">{{ pending_approvals }}</h2>
+        </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <h2>Quick Actions</h2>
+    <div class="actions">
+        <a href="{{ url_for('admin.add_trek') }}" class="btn-primary" style="display: block; text-align: center; text-decoration: none; padding: 14px; border-radius: 10px; font-weight: bold; font-size: 15px;">Add New Trek</a>
+        <a href="#treks-section" class="btn-secondary" style="display: block; text-align: center; text-decoration: none; padding: 14px; border-radius: 10px; font-weight: bold; font-size: 15px;">Manage Treks</a>
+        <a href="#staff-section" class="btn-secondary" style="display: block; text-align: center; text-decoration: none; padding: 14px; border-radius: 10px; font-weight: bold; font-size: 15px;">Review Staff</a>
+        <a href="#users-section" class="btn-secondary" style="display: block; text-align: center; text-decoration: none; padding: 14px; border-radius: 10px; font-weight: bold; font-size: 15px;">Manage Users</a>
+    </div>
+
+    <!-- Search Box -->
+    <div class="search-box">
+        <form action="{{ url_for('admin.dashboard') }}" method="GET" style="display: flex; width: 100%; gap: 15px;">
+            <input type="text" name="q" placeholder="Search Treks, Staff, or Users by Name, Location, Email, or ID..." value="{{ search_query }}">
+            <button type="submit">Search</button>
+            {% if search_query %}
+                <a href="{{ url_for('admin.dashboard') }}" class="btn-sm btn-secondary" style="display: flex; align-items: center; justify-content: center; text-align: center; padding: 0 15px; margin: 0; border-radius: 10px;">Clear</a>
+            {% endif %}
+        </form>
+    </div>
+
+    {% if search_query %}
+        <div style="background-color: #e8f7ff; padding: 10px 15px; border-radius: 8px; margin-bottom: 25px; color: #004f8c; font-weight: 500;">
+            Showing results for query: "<strong>{{ search_query }}</strong>"
+        </div>
+    {% endif %}
+
+    <!-- Trek Table -->
+    <div class="section-header" id="treks-section">
+        <h2>Trekking Expeditions</h2>
+        <a href="{{ url_for('admin.add_trek') }}" class="btn-sm btn-primary">+ Add Trek</a>
+    </div>
+    {% if treks %}
+    <table>
+        <tr>
+            <th>ID</th>
+            <th>Trek Name</th>
+            <th>Location</th>
+            <th>Difficulty</th>
+            <th>Duration</th>
+            <th>Available Slots</th>
+            <th>Status</th>
+            <th>Assigned Staff</th>
+            <th>Actions</th>
+        </tr>
+        {% for trek in treks %}
+        <tr>
+            <td>{{ trek.id }}</td>
+            <td><strong>{{ trek.name }}</strong></td>
+            <td>{{ trek.location }}</td>
+            <td><span class="badge" style="background-color: {% if trek.difficulty=='Easy' %}#d4edda; color:#155724;{% elif trek.difficulty=='Moderate' %}#fff3cd; color:#856404;{% else %}#f8d7da; color:#721c24;{% endif %}">{{ trek.difficulty }}</span></td>
+            <td>{{ trek.duration }} days</td>
+            <td>{{ trek.available_slots }} slots</td>
+            <td><span class="badge badge-{{ trek.status.lower() }}">{{ trek.status }}</span></td>
+            <td>
+                <!-- Staff Assignment Form -->
+                <form action="{{ url_for('admin.assign_staff', trek_id=trek.id) }}" method="POST" class="assign-form">
+                    <select name="staff_id" class="assign-select" onchange="this.form.submit()">
+                        <option value="">Unassigned</option>
+                        {% for staff in active_staff %}
+                            <option value="{{ staff.id }}" {% if trek.staff_id == staff.id %}selected{% endif %}>{{ staff.name }}</option>
+                        {% endfor %}
+                    </select>
+                    <button type="submit" class="btn-sm btn-primary" style="padding: 4px 8px; font-size: 11px;">Set</button>
+                </form>
+            </td>
+            <td>
+                <div style="display: flex; gap: 5px; justify-content: center;">
+                    <a href="{{ url_for('admin.edit_trek', trek_id=trek.id) }}" class="btn-sm btn-warning">Edit</a>
+                    <!-- Standard HTML Form for Delete POST -->
+                    <form action="{{ url_for('admin.delete_trek', trek_id=trek.id) }}" method="POST" onsubmit="return confirm('Are you sure you want to delete this trek?');">
+                        <button type="submit" class="btn-sm btn-danger">Delete</button>
+                    </form>
+                </div>
+            </td>
+        </tr>
+        {% endfor %}
+    </table>
+    {% else %}
+        <p style="padding: 20px; background: white; border-radius: 10px; text-align: center; color: #666; box-shadow: 0 4px 10px rgba(0,0,0,0.05);">No treks found matching the query.</p>
+    {% endif %}
+
+
+    <!-- Staff Table -->
+    <div class="section-header" id="staff-section">
+        <h2>Trek Staff Profiles</h2>
+    </div>
+    {% if staff_members %}
+    <table>
+        <tr>
+            <th>ID</th>
+            <th>Name</th>
+            <th>Email</th>
+            <th>Contact</th>
+            <th>Status</th>
+            <th>Blacklisted</th>
+            <th>Actions</th>
+        </tr>
+        {% for staff in staff_members %}
+        <tr>
+            <td>{{ staff.id }}</td>
+            <td><strong>{{ staff.name }}</strong></td>
+            <td>{{ staff.email }}</td>
+            <td>{{ staff.contact }}</td>
+            <td>
+                <span class="badge badge-{{ staff.status.lower() }}">{{ staff.status }}</span>
+            </td>
+            <td>
+                {% if staff.is_blacklisted %}
+                    <span class="badge badge-blacklisted">Yes</span>
+                {% else %}
+                    <span class="badge badge-approved">No</span>
+                {% endif %}
+            </td>
+            <td>
+                <div style="display: flex; gap: 5px; justify-content: center;">
+                    {% if staff.status == 'pending' %}
+                        <form action="{{ url_for('admin.approve_staff', staff_id=staff.id) }}" method="POST">
+                            <button type="submit" class="btn-sm btn-success">Approve</button>
+                        </form>
+                    {% endif %}
+                    <form action="{{ url_for('admin.toggle_blacklist_staff', staff_id=staff.id) }}" method="POST">
+                        <button type="submit" class="btn-sm {% if staff.is_blacklisted %}btn-primary{% else %}btn-danger{% endif %}">
+                            {% if staff.is_blacklisted %}Whitelist{% else %}Blacklist{% endif %}
+                        </button>
+                    </form>
+                </div>
+            </td>
+        </tr>
+        {% endfor %}
+    </table>
+    {% else %}
+        <p style="padding: 20px; background: white; border-radius: 10px; text-align: center; color: #666; box-shadow: 0 4px 10px rgba(0,0,0,0.05);">No staff members found matching the query.</p>
+    {% endif %}
+
+
+    <!-- User Table -->
+    <div class="section-header" id="users-section">
+        <h2>Registered Trekkers (Users)</h2>
+    </div>
+    {% if users %}
+    <table>
+        <tr>
+            <th>ID</th>
+            <th>Name</th>
+            <th>Email</th>
+            <th>Contact</th>
+            <th>Blacklisted</th>
+            <th>Actions</th>
+        </tr>
+        {% for user in users %}
+        <tr>
+            <td>{{ user.id }}</td>
+            <td><strong>{{ user.name }}</strong></td>
+            <td>{{ user.email }}</td>
+            <td>{{ user.contact }}</td>
+            <td>
+                {% if user.is_blacklisted %}
+                    <span class="badge badge-blacklisted">Yes</span>
+                {% else %}
+                    <span class="badge badge-approved">No</span>
+                {% endif %}
+            </td>
+            <td>
+                <form action="{{ url_for('admin.toggle_blacklist_user', user_id=user.id) }}" method="POST">
+                    <button type="submit" class="btn-sm {% if user.is_blacklisted %}btn-primary{% else %}btn-danger{% endif %}">
+                        {% if user.is_blacklisted %}Whitelist{% else %}Blacklist{% endif %}
+                    </button>
+                </form>
+            </td>
+        </tr>
+        {% endfor %}
+    </table>
+    {% else %}
+        <p style="padding: 20px; background: white; border-radius: 10px; text-align: center; color: #666; box-shadow: 0 4px 10px rgba(0,0,0,0.05);">No users found matching the query.</p>
+    {% endif %}
+
+</div>
+
+</body>
+</html>
