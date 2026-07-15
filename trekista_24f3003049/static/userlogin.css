@@ -1,0 +1,136 @@
+*{
+    margin: 0px;
+    padding: 0;
+    box-sizing:border-box;
+    font-family:Arial, Helvetica, sans-serif;
+}
+
+body{
+    height:100vh;
+    margin-top: 10vh;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    background:#406e96;
+    background:linear-gradient(135deg,#d8f3ff,#ffffff,#c8ecff);
+}
+
+.container{
+    width:100%;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    padding:30px;
+}
+
+.form-box{
+    width:430px;
+    background:white;
+    padding:40px;
+    border-radius:18px;
+    box-shadow:0 15px 40px rgba(0,140,255,0.18);
+    border:2px solid #cdeeff;
+}
+
+.form-box h1{
+    text-align:center;
+    color:#0099ff;
+    margin-bottom:8px;
+}
+
+.form-box p{
+    text-align:center;
+    color:#666;
+    margin-bottom:25px;
+}
+
+.input-group{
+    margin-bottom:18px;
+}
+
+.input-group label{
+    display:block;
+    margin-bottom:7px;
+    color:#333;
+    font-weight:bold;
+}
+
+.input-group input{
+    width:100%;
+    padding:12px 15px;
+    border:2px solid #bfe7ff;
+    border-radius:10px;
+    outline:none;
+    font-size:15px;
+    transition:.3s;
+    background:#f9fdff;
+}
+
+.input-group input:focus{
+    border-color:#27a9ff;
+    box-shadow:0 0 8px rgba(39,169,255,.3);
+}
+
+.gender{
+    display:flex;
+    justify-content:space-between;
+    margin-top:5px;
+}
+
+.gender label{
+    font-weight:normal;
+    color:#444;
+}
+
+.gender input{
+    width:auto;
+    margin-right:5px;
+}
+
+button{
+    width:100%;
+    padding:13px;
+    border:none;
+    border-radius:10px;
+    background:#33b5ff;
+    color:white;
+    font-size:17px;
+    font-weight:bold;
+    cursor:pointer;
+    transition:.3s;
+    margin-top:10px;
+}
+/* signup button design  */
+button:hover{
+    background:#0099ff;
+}
+
+.login-link{
+    margin-top:20px;
+    text-align:center;
+    font-size:15px;
+}
+
+.login-link a{
+    color:#0099ff;
+    text-decoration:none;
+    font-weight:bold;
+}
+
+.login-link a:hover{
+    text-decoration:underline;
+}
+
+@media(max-width:500px){
+
+.form-box{
+    width:100%;
+    padding:25px;
+}
+
+.gender{
+    flex-direction:column;
+    gap:10px;
+}
+
+}
