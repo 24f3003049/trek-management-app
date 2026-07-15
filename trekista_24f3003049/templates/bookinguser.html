@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <title>my bookings - Trekista</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='dashboard.css') }}">
+</head>
+<body>
+    <nav class="navbar">
+    <div class="logo">
+        Trek<span>ista</span>
+    </div>
+
+    <ul class="nav-links">
+        <li><a href="/">Home</a></li>
+        <li><a href="{{ url_for('user.dashboard') }}">Dashboard</a></li>
+        <li><a href="{{ url_for('user.dashboard') }}#available-section">Available Treks</a></li>
+        <li><a href="{{ url_for('user.bookings') }}">My Bookings</a></li>
+        <li><a href="{{ url_for('auth.logout') }}" style="color: #ff6666;">Logout</a></li>
+    </ul>
+</nav>
+    <section class="table-section" id="bookings-section">
+    <h2>Your Booking History & Schedule</h2>
+    {% if bookings %}
+    <table>
+        <thead>
+            <tr>
+                <th>Booking ID</th>
+                <th>Trek</th>
+                <th>Location</th>
+                <th>Dates</th>
+                <th>Booked On</th>
+                <th>Status</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for booking in bookings %}
+            <tr>
+                <td>#{{ booking.id }}</td>
+                <td><strong>{{ booking.trek.name }}</strong></td>
+                <td>{{ booking.trek.location }}</td>
+                <td>{{ booking.trek.start_date.strftime('%d %b %Y') }} to {{ booking.trek.end_date.strftime('%d %b %Y') }}</td>
+                <td>{{ booking.booking_date.strftime('%d %b %Y') }}</td>
+                <td><span class="badge badge-{{ booking.status.lower() }}">{{ booking.status }}</span></td>
+                <td>
+                    {% if booking.status == 'Booked' %}
+                         <!-- Cancel Booking -->
+                        <form action="{{ url_for('user.cancel_booking', booking_id=booking.id) }}" method="POST" onsubmit="return confirm('Are you sure you want to cancel this booking?');">
+                            <button type="submit" class="btn btn-danger btn-sm " style = "background: #dc3545;
+    color: #f8d7da; ">Cancel Booking</button>
+                        </form>
+                    {% else %}
+                        -
+                    {% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+        <p style="padding: 25px; background: white; border-radius: 12px; text-align: center; color: #666; box-shadow: 0 10px 20px rgba(0, 153, 255, .05);">You do not have any trekking history or bookings yet.</p>
+    {% endif %}
+</section>
+
+</body>
+</html>
