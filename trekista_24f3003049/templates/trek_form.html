@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ action }} Trek - Trekista</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='userlogin.css') }}">
+    <style>
+        .container {
+            max-width: 600px;
+            margin: 40px auto;
+        }
+        .form-box {
+            width: 100%;
+            padding: 40px;
+        }
+        .input-row {
+            display: flex;
+            gap: 15px;
+        }
+        .input-row .input-group {
+            flex: 1;
+        }
+        textarea {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #bde5ff;
+            border-radius: 8px;
+            outline: none;
+            resize: vertical;
+            min-height: 100px;
+            font-family: inherit;
+        }
+        textarea:focus {
+            border-color: #0099ff;
+        }
+        select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #bde5ff;
+            border-radius: 8px;
+            outline: none;
+            background: white;
+        }
+        select:focus {
+            border-color: #0099ff;
+        }
+        .btn-cancel {
+            display: block;
+            text-align: center;
+            margin-top: 15px;
+            color: #666;
+            text-decoration: none;
+            font-weight: bold;
+        }
+        .btn-cancel:hover {
+            color: #dc3545;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="form-box">
+        <h1>{{ action }} Trek</h1>
+        <p>Define the trekking details below</p>
+
+        <!-- Flash Messages -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+          {% if messages %}
+            <div class="flash-messages" style="margin-bottom: 20px;">
+              {% for category, message in messages %}
+                <div class="flash-message" style="padding: 12px; border-radius: 6px; text-align: center; font-size: 14px; background-color: {% if category=='danger' %}#f8d7da; color:#721c24;{% else %}#d4edda; color:#155724;{% endif %}; border: 1px solid #eee;">
+                    {{ message }}
+                </div>
+              {% endfor %}
+            </div>
+          {% endif %}
+        {% endwith %}
+
+        <form action="{% if action == 'Edit' %}{{ url_for('admin.edit_trek', trek_id=trek.id) }}{% else %}{{ url_for('admin.add_trek') }}{% endif %}" method="POST">
+
+            <div class="input-group">
+                <label for="name">Trek Name</label>
+                <input
+                    type="text"
+                    id="name"
+                    name="name"
+                    placeholder="e.g. Valley of Flowers"
+                    value="{{ trek.name if trek else '' }}"
+                    required>
+            </div>
+
+            <div class="input-group">
+                <label for="location">Location (State/Region)</label>
+                <input
+                    type="text"
+                    id="location"
+                    name="location"
+                    placeholder="e.g. Uttarakhand"
+                    value="{{ trek.location if trek else '' }}"
+                    required>
+            </div>
+
+            <div class="input-row">
+                <div class="input-group">
+                    <label for="difficulty">Difficulty</label>
+                    <select id="difficulty" name="difficulty">
+                        <option value="Easy" {% if trek and trek.difficulty == 'Easy' %}selected{% endif %}>Easy</option>
+                        <option value="Moderate" {% if trek and trek.difficulty == 'Moderate' %}selected{% endif %}>Moderate</option>
+                        <option value="Hard" {% if trek and trek.difficulty == 'Hard' %}selected{% endif %}>Hard</option>
+                    </select>
+                </div>
+
+                <div class="input-group">
+                    <label for="duration">Duration (Days)</label>
+                    <input
+                        type="number"
+                        id="duration"
+                        name="duration"
+                        min="1"
+                        placeholder="e.g. 5"
+                        value="{{ trek.duration if trek else '' }}"
+                        required>
+                </div>
+            </div>
+
+            <div class="input-row">
+                <div class="input-group">
+                    <label for="total_slots">Total Slots Available</label>
+                    <input
+                        type="number"
+                        id="total_slots"
+                        name="total_slots"
+                        min="1"
+                        placeholder="e.g. 20"
+                        value="{{ trek.available_slots if trek else '' }}"
+                        required>
+                </div>
+
+                <div class="input-group">
+                    <label for="status">Status</label>
+                    <select id="status" name="status">
+                        <option value="Pending" {% if trek and trek.status == 'Pending' %}selected{% endif %}>Pending</option>
+                        <option value="Approved" {% if trek and trek.status == 'Approved' %}selected{% endif %}>Approved</option>
+                        <option value="Open" {% if trek and trek.status == 'Open' %}selected{% endif %}>Open</option>
+                        <option value="Closed" {% if trek and trek.status == 'Closed' %}selected{% endif %}>Closed</option>
+                        <option value="Completed" {% if trek and trek.status == 'Completed' %}selected{% endif %}>Completed</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="input-row">
+                <div class="input-group">
+                    <label for="start_date">Start Date</label>
+                    <input
+                        type="date"
+                        id="start_date"
+                        name="start_date"
+                        value="{{ trek.start_date.strftime('%Y-%m-%d') if trek else '' }}"
+                        required>
+                </div>
+
+                <div class="input-group">
+                    <label for="end_date">End Date</label>
+                    <input
+                        type="date"
+                        id="end_date"
+                        name="end_date"
+                        value="{{ trek.end_date.strftime('%Y-%m-%d') if trek else '' }}"
+                        required>
+                </div>
+            </div>
+
+            <div class="input-group">
+                <label for="staff_id">Assign Guide/Staff</label>
+                <select id="staff_id" name="staff_id">
+                    <option value="">Select Staff (Optional)</option>
+                    {% for staff in active_staff %}
+                        <option value="{{ staff.id }}" {% if trek and trek.staff_id == staff.id %}selected{% endif %}>
+                            {{ staff.name }} (ID: {{ staff.id }})
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="input-group">
+                <label for="description">Trek Description</label>
+                <textarea id="description" name="description" placeholder="Write description or itinerary details...">{{ trek.description if trek else '' }}</textarea>
+            </div>
+
+            <button type="submit">Save Trek</button>
+            <a href="{{ url_for('admin.dashboard') }}" class="btn-cancel">Cancel</a>
+        </form>
+    </div>
+</div>
+
+</body>
+</html>

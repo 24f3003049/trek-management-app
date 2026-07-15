@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pending Approval - Trekista</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='userlogin.css') }}">
+    <style>
+        .form-box {
+            max-width: 500px;
+            text-align: center;
+            padding: 50px;
+        }
+        .icon {
+            font-size: 60px;
+            color: #ffc107;
+            margin-bottom: 20px;
+        }
+        h1 {
+            color: #004f8c;
+            margin-bottom: 15px;
+            font-size: 26px;
+        }
+        p {
+            color: #555;
+            line-height: 1.6;
+            margin-bottom: 30px;
+        }
+        .logout-btn {
+            background-color: #dc3545;
+            color: white;
+            padding: 12px 25px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: bold;
+            display: inline-block;
+            transition: 0.3s;
+        }
+        .logout-btn:hover {
+            background-color: #c82333;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="form-box">
+        <div class="icon">⏳</div>
+        <h1>Registration Pending Approval</h1>
+        <p>
+            Hello <strong>{{ current_user.name }}</strong>,<br><br>
+            Thank you for registering as Trek Staff. Your account has been created successfully but requires activation by an Administrator before you can access the staff dashboard.<br><br>
+            Please contact the administrator or check back later.
+        </p>
+        <a href="{{ url_for('auth.logout') }}" class="logout-btn">Log Out</a>
+    </div>
+</div>
+
+</body>
+</html>
