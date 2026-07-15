@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Staff Dashboard - Trekista</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='admin.css') }}">
+    <style>
+        /* Supplementary styling */
+        .flash-messages {
+            margin-bottom: 20px;
+        }
+        .flash-message {
+            padding: 12px;
+            border-radius: 6px;
+            margin-bottom: 10px;
+            font-size: 14px;
+            font-weight: 500;
+            text-align: center;
+        }
+        .flash-success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .flash-danger {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        .badge {
+            display: inline-block;
+            padding: 4px 8px;
+            font-size: 12px;
+            font-weight: bold;
+            border-radius: 4px;
+            text-transform: uppercase;
+        }
+        .badge-pending {
+            background-color: #ffeeba;
+            color: #856404;
+        }
+        .badge-approved, .badge-open, .badge-active, .badge-booked {
+            background-color: #c3e6cb;
+            color: #155724;
+        }
+        .badge-closed, .badge-cancelled {
+            background-color: #f5c6cb;
+            color: #721c24;
+        }
+        .badge-completed {
+            background-color: #d1ecf1;
+            color: #0c5460;
+        }
+        .section-header {
+            margin-top: 40px;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #bde5ff;
+            padding-bottom: 10px;
+        }
+        .section-header h2 {
+            color: #004f8c;
+            margin: 0;
+        }
+        .update-form {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+        .update-input {
+            width: 80px;
+            padding: 6px;
+            border: 1px solid #bde5ff;
+            border-radius: 6px;
+            font-size: 13px;
+        }
+        .update-select {
+            padding: 6px;
+            border: 1px solid #bde5ff;
+            border-radius: 6px;
+            background-color: white;
+            font-size: 13px;
+        }
+        .btn-sm {
+            padding: 6px 12px;
+            font-size: 13px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: bold;
+            border: none;
+            text-decoration: none;
+            background-color: #0099ff;
+            color: white;
+        }
+        .btn-sm:hover {
+            background-color: #007ed6;
+        }
+    </style>
+</head>
+<body>
+
+<!-- Sidebar -->
+<div class="sidebar">
+    <h2>Trekista</h2>
+    <ul>
+        <li><a href="{{ url_for('staff.dashboard') }}">🏠 Dashboard</a></li>
+        <li><a href="#assigned-treks-section">🥾 Assigned Treks</a></li>
+        <li><a href="#trekkers-section">👥 Registered Trekkers</a></li>
+        <li><a href="/">🌐 Public Site</a></li>
+        <li><a href="{{ url_for('auth.logout') }}" style="color: #ff6666;">🚪 Logout</a></li>
+    </ul>
+</div>
+
+<!-- Main Content -->
+<div class="main">
+    <header>
+        <h1>Staff Dashboard</h1>
+        <p>Welcome, {{ current_user.name }} (Trek Guide / Staff)</p>
+    </header>
+
+    <!-- Flash Messages -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        <div class="flash-messages">
+          {% for category, message in messages %}
+            <div class="flash-message flash-{{ category }}">{{ message }}</div>
+          {% endfor %}
+        </div>
+      {% endif %}
+    {% endwith %}
+
+    <!-- Overview Statistics -->
+    <div class="cards">
+        <div class="card">
+            <h3>Assigned Treks</h3>
+            <h2>{{ treks|length }}</h2>
+        </div>
+        <div class="card">
+            <h3>Active Bookings</h3>
+            <h2>{{ bookings|selectattr('status', 'equalto', 'Booked')|list|length }}</h2>
+        </div>
+        <div class="card">
+            <h3>Total Registered Trekkers</h3>
+            <h2>{{ bookings|length }}</h2>
+        </div>
+    </div>
+
+    <!-- Assigned Treks Section -->
+    <div class="section-header" id="assigned-treks-section">
+        <h2>Your Assigned Treks</h2>
+    </div>
+    
+    {% if treks %}
+    <table>
+        <tr>
+            <th>ID</th>
+            <th>Trek Name</th>
+            <th>Location</th>
+            <th>Difficulty</th>
+            <th>Duration</th>
+            <th>Dates</th>
+            <th>Current Status</th>
+            <th>Modify Slots & Status</th>
+        </tr>
+        {% for trek in treks %}
+        <tr>
+            <td>{{ trek.id }}</td>
+            <td><strong>{{ trek.name }}</strong></td>
+            <td>{{ trek.location }}</td>
+            <td>
+                <span class="badge" style="background-color: {% if trek.difficulty=='Easy' %}#d4edda; color:#155724;{% elif trek.difficulty=='Moderate' %}#fff3cd; color:#856404;{% else %}#f8d7da; color:#721c24;{% endif %}">
+                    {{ trek.difficulty }}
+                </span>
+            </td>
+            <td>{{ trek.duration }} days</td>
+            <td>{{ trek.start_date.strftime('%d %b %Y') }} - {{ trek.end_date.strftime('%d %b %Y') }}</td>
+            <td><span class="badge badge-{{ trek.status.lower() }}">{{ trek.status }}</span></td>
+            <td>
+                <form action="{{ url_for('staff.update_trek', trek_id=trek.id) }}" method="POST" class="update-form">
+                    <div>
+                        <label style="font-size: 11px; display: block; text-align: left; color: #666;">Slots:</label>
+                        <input type="number" name="available_slots" class="update-input" value="{{ trek.available_slots }}" min="0" required>
+                    </div>
+                    <div>
+                        <label style="font-size: 11px; display: block; text-align: left; color: #666;">Status:</label>
+                        <select name="status" class="update-select">
+                            <option value="Open" {% if trek.status == 'Open' %}selected{% endif %}>Open</option>
+                            <option value="Closed" {% if trek.status == 'Closed' %}selected{% endif %}>Closed</option>
+                            <option value="Completed" {% if trek.status == 'Completed' %}selected{% endif %}>Completed</option>
+                            <option value="Pending" {% if trek.status == 'Pending' %}selected{% endif %}>Pending</option>
+                            <option value="Approved" {% if trek.status == 'Approved' %}selected{% endif %}>Approved</option>
+                        </select>
+                    </div>
+                    <button type="submit" class="btn-sm" style="margin-top: 15px;">Update</button>
+                </form>
+            </td>
+        </tr>
+        {% endfor %}
+    </table>
+    {% else %}
+        <p style="padding: 20px; background: white; border-radius: 10px; text-align: center; color: #666; box-shadow: 0 4px 10px rgba(0,0,0,0.05);">You do not have any assigned treks at the moment.</p>
+    {% endif %}
+
+
+    <!-- Registered Trekkers Section -->
+    <div class="section-header" id="trekkers-section">
+        <h2>Registered Trekkers List</h2>
+    </div>
+
+    {% if bookings %}
+    <table>
+        <tr>
+            <th>Trek Name</th>
+            <th>Trekker Name</th>
+            <th>Email</th>
+            <th>Contact</th>
+            <th>Booking Date</th>
+            <th>Booking Status</th>
+        </tr>
+        {% for booking in bookings %}
+        <tr>
+            <td><strong>{{ booking.trek.name }}</strong></td>
+            <td>{{ booking.user.name }}</td>
+            <td>{{ booking.user.email }}</td>
+            <td>{{ booking.user.contact }}</td>
+            <td>{{ booking.booking_date.strftime('%d %b %Y %H:%M') }}</td>
+            <td>
+                <span class="badge badge-{{ booking.status.lower() }}">{{ booking.status }}</span>
+            </td>
+        </tr>
+        {% endfor %}
+    </table>
+    {% else %}
+        <p style="padding: 20px; background: white; border-radius: 10px; text-align: center; color: #666; box-shadow: 0 4px 10px rgba(0,0,0,0.05);">No participants have registered for your treks yet.</p>
+    {% endif %}
+
+</div>
+
+</body>
+</html>

@@ -1,0 +1,539 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Dashboard - Trekista</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='dashboard.css') }}">
+    <style>
+        /* Flash messages and layout adjustments */
+        .flash-messages {
+            width: 85%;
+            margin: 20px auto 0 auto;
+        }
+        .flash-message {
+            padding: 12px;
+            border-radius: 6px;
+            margin-bottom: 10px;
+            font-size: 14px;
+            font-weight: 500;
+            text-align: center;
+        }
+        .flash-success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .flash-danger {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        .flash-info {
+            background-color: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+        .flash-warning {
+            background-color: #fff3cd;
+            color: #856404;
+            border: 1px solid #ffeeba;
+        }
+        .filter-section {
+            width: 85%;
+            margin: 30px auto;
+            background: white;
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 10px 20px rgba(0, 153, 255, .08);
+        }
+        .filter-section h2 {
+            color: #0099ff;
+            margin-bottom: 15px;
+        }
+        .filter-form {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+        .filter-group {
+            flex: 1;
+            min-width: 200px;
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+        .filter-group label {
+            font-weight: 600;
+            color: #555;
+            font-size: 14px;
+        }
+        .filter-group input, .filter-group select {
+            padding: 10px;
+            border: 2px solid #bde5ff;
+            border-radius: 8px;
+            outline: none;
+            background: white;
+        }
+        .filter-group input:focus, .filter-group select:focus {
+            border-color: #0099ff;
+        }
+        .filter-btn-container {
+            display: flex;
+            gap: 10px;
+            align-items: flex-end;
+        }
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 14px;
+            text-decoration: none;
+            display: inline-block;
+            text-align: center;
+        }
+        .btn-primary {
+            background: #0099ff;
+            color: white;
+        }
+        .btn-primary:hover {
+            background: #007ed6;
+        }
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+        .btn-secondary:hover {
+            background: #5a6268;
+        }
+        .btn-danger {
+            background: #dc3545;
+            color: white;
+        }
+        .btn-danger:hover {
+            background: #c82333;
+        }
+        .btn-sm {
+            padding: 6px 12px;
+            font-size: 13px;
+        }
+        .badge {
+            display: inline-block;
+            padding: 4px 8px;
+            font-size: 12px;
+            font-weight: bold;
+            border-radius: 4px;
+            text-transform: uppercase;
+        }
+        .badge-booked, .badge-open, .badge-approved {
+            background-color: #c3e6cb;
+            color: #155724;
+        }
+        .badge-cancelled, .badge-closed {
+            background-color: #f5c6cb;
+            color: #721c24;
+        }
+        .badge-completed {
+            background-color: #d1ecf1;
+            color: #0c5460;
+        }
+
+        .trek-cards-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+            width: 85%;
+            margin: 20px auto 40px auto;
+        }
+        .trek-card {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 5px 15px rgba(0, 153, 255, .08);
+            border: 1px solid #e8f7ff;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+        .trek-card h3 {
+            color: #004f8c;
+            margin-bottom: 8px;
+        }
+        .trek-card-details {
+            margin-bottom: 15px;
+            font-size: 14px;
+            color: #555;
+            line-height: 1.6;
+        }
+        
+footer {
+
+    background: #ffffff;
+
+    margin-top: 80px;
+
+    box-shadow: 0 -5px 15px rgba(0, 153, 255, .08);
+
+}
+
+.footer-container {
+
+    width: 90%;
+
+    margin: auto;
+
+    padding: 50px 0;
+
+    display: grid;
+
+    grid-template-columns: 2fr 1fr 1fr 1.5fr;
+
+    gap: 40px;
+
+}
+
+.footer-logo {
+
+    color: #0099ff;
+
+    margin-bottom: 15px;
+
+}
+
+.footer-logo span {
+
+    color: #004f8c;
+
+}
+
+.footer-section h3 {
+
+    color: #0099ff;
+
+    margin-bottom: 20px;
+
+}
+
+.footer-section p {
+
+    color: #555;
+
+    line-height: 1.7;
+
+}
+
+.footer-section ul {
+
+    list-style: none;
+
+}
+
+.footer-section ul li {
+
+    margin: 12px 0;
+
+}
+
+.footer-section ul li a {
+
+    text-decoration: none;
+
+    color: #555;
+
+    transition: .3s;
+
+}
+
+.footer-section ul li a:hover {
+
+    color: #0099ff;
+
+    padding-left: 5px;
+
+}
+
+.social-icons {
+
+    margin-top: 20px;
+
+}
+
+.social-icons a {
+
+    display: inline-block;
+
+    width: 42px;
+
+    height: 42px;
+
+    line-height: 42px;
+
+    text-align: center;
+
+    background: #e8f7ff;
+
+    color: #0099ff;
+
+    border-radius: 50%;
+
+    margin-right: 10px;
+
+    text-decoration: none;
+
+    font-size: 20px;
+
+    transition: .3s;
+
+}
+
+.social-icons a:hover {
+
+    background: #0099ff;
+
+    color: white;
+
+}
+
+hr {
+
+    border: none;
+
+    border-top: 1px solid #d8ecff;
+
+}
+
+.copyright {
+
+    text-align: center;
+
+    padding: 20px;
+
+    color: #666;
+
+    font-size: 15px;
+
+}
+
+    </style>
+
+
+</head>
+<body>
+
+
+<!-- Navbar -->
+<nav class="navbar">
+    <div class="logo">
+        Trek<span>ista</span>
+    </div>
+
+    <ul class="nav-links">
+        <li><a href="/">Home</a></li>
+        <li><a href="{{ url_for('user.dashboard') }}">Dashboard</a></li>
+        <li><a href="#available-section">Available Treks</a></li>
+        <li><a href="{{ url_for('user.bookings')}}">My Bookings</a></li>
+        <li><a href="{{ url_for('auth.logout') }}" style="color: #ff6666;">Logout</a></li>
+    </ul>
+</nav>
+
+<!-- Flash Messages -->
+{% with messages = get_flashed_messages(with_categories=true) %}
+  {% if messages %}
+    <div class="flash-messages">
+      {% for category, message in messages %}
+        <div class="flash-message flash-{{ category }}">{{ message }}</div>
+      {% endfor %}
+    </div>
+  {% endif %}
+{% endwith %}
+
+<!-- Welcome Section -->
+<section class="welcome">
+    <h1>Welcome, {{ current_user.name }}!</h1>
+    <p>Manage your bookings and explore new expeditions.</p>
+</section>
+
+<!-- Dashboard Cards / Stats -->
+<section class="cards">
+    <div class="card">
+        <h2>Open Treks</h2>
+        <p>{{ total_available }}</p>
+    </div>
+    <div class="card">
+        <h2>My Bookings</h2>
+        <p>{{ my_bookings_count }}</p>
+    </div>
+    <div class="card">
+        <h2>Completed</h2>
+        <p>{{ completed_bookings_count }}</p>
+    </div>
+</section>
+
+<!-- Search & Filter Section -->
+<section class="filter-section" id="available-section">
+    <h2>Search & Filter Treks</h2>
+    <form action="{{ url_for('user.dashboard') }}" method="GET" class="filter-form">
+        <div class="filter-group">
+            <label for="location">Location</label>
+            <input type="text" id="location" name="location" placeholder="e.g. Uttarakhand" value="{{ location_filter }}">
+        </div>
+        <div class="filter-group">
+            <label for="difficulty">Difficulty Level</label>
+            <select id="difficulty" name="difficulty">
+                <option value="All" {% if difficulty_filter == 'All' %}selected{% endif %}>All Difficulties</option>
+                <option value="Easy" {% if difficulty_filter == 'Easy' %}selected{% endif %}>Easy</option>
+                <option value="Moderate" {% if difficulty_filter == 'Moderate' %}selected{% endif %}>Moderate</option>
+                <option value="Hard" {% if difficulty_filter == 'Hard' %}selected{% endif %}>Hard</option>
+            </select>
+        </div>
+        <div class="filter-btn-container">
+            <button type="submit" class="btn btn-primary">Apply Filters</button>
+            {% if location_filter or difficulty_filter != 'All' %}
+                <a href="{{ url_for('user.dashboard') }}" class="btn btn-secondary">Clear</a>
+            {% endif %}
+        </div>
+    </form>
+</section>
+
+<!-- Available Treks List -->
+<h2 style="width: 85%; margin: 30px auto 10px auto; color: #004f8c;">Available Trekking Expeditions</h2>
+{% if treks %}
+<section class="trek-cards-grid">
+    {% for trek in treks %}
+    <div class="trek-card">
+        <div>
+            <h3>{{ trek.name }}</h3>
+            <div class="trek-card-details">
+                <p>📍 <strong>Location:</strong> {{ trek.location }}</p>
+                <p>⚡ <strong>Difficulty:</strong> <span class="badge" style="background-color: {% if trek.difficulty=='Easy' %}#d4edda; color:#155724;{% elif trek.difficulty=='Moderate' %}#fff3cd; color:#856404;{% else %}#f8d7da; color:#721c24;{% endif %}">{{ trek.difficulty }}</span></p>
+                <p>⏱️ <strong>Duration:</strong> {{ trek.duration }} Days</p>
+                <p>📅 <strong>Dates:</strong> {{ trek.start_date.strftime('%d %b %Y') }} to {{ trek.end_date.strftime('%d %b %Y') }}</p>
+                <p>👥 <strong>Slots Left:</strong> {{ trek.available_slots }}</p>
+            </div>
+        </div>
+
+        <div>
+            <!-- Book Trek Form -->
+            <form action="{{ url_for('user.book_trek', trek_id=trek.id) }}" method="POST">
+                {% if trek.available_slots > 0 %}
+                    <button type="submit" class="btn btn-primary" style="width: 100%;">Book Trek</button>
+                {% else %}
+                    <button type="button" class="btn btn-secondary" style="width: 100%; cursor: not-allowed;" disabled>Sold Out</button>
+                {% endif %}
+            </form>
+        </div>
+    </div>
+    {% endfor %}
+</section>
+{% else %}
+    <p style="width: 85%; margin: 10px auto 40px auto; padding: 25px; background: white; border-radius: 12px; text-align: center; color: #666; box-shadow: 0 10px 20px rgba(0, 153, 255, .05);">No open treks found matching the filters.</p>
+{% endif %}
+
+<!-- Booking History Section -->
+<!-- <section class="table-section" id="bookings-section">
+    <h2>Your Booking History & Schedule</h2>
+    {% if bookings %}
+    <table>
+        <thead>
+            <tr>
+                <th>Booking ID</th>
+                <th>Trek</th>
+                <th>Location</th>
+                <th>Dates</th>
+                <th>Booked On</th>
+                <th>Status</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for booking in bookings %}
+            <tr> -->
+                <!-- <td>#{{ booking.id }}</td>
+                <td><strong>{{ booking.trek.name }}</strong></td>
+                <td>{{ booking.trek.location }}</td>
+                <td>{{ booking.trek.start_date.strftime('%d %b %Y') }} to {{ booking.trek.end_date.strftime('%d %b %Y') }}</td>
+                <td>{{ booking.booking_date.strftime('%d %b %Y') }}</td>
+                <td><span class="badge badge-{{ booking.status.lower() }}">{{ booking.status }}</span></td>
+                <td>
+                    {% if booking.status == 'Booked' %} -->
+                        <!-- Cancel Booking Form )
+                        <form action="{{ url_for('user.cancel_booking', booking_id=booking.id) }}" method="POST" onsubmit="return confirm('Are you sure you want to cancel this booking?');">
+                            <button type="submit" class="btn btn-danger btn-sm">Cancel Booking</button>
+                        </form>
+                    {% else %}
+                        -
+                    {% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+        <p style="padding: 25px; background: white; border-radius: 12px; text-align: center; color: #666; box-shadow: 0 10px 20px rgba(0, 153, 255, .05);">You do not have any trekking history or bookings yet.</p>
+    {% endif %}
+</section> -->
+
+  <!-- Footer -->
+    <footer>
+        <div class="footer-container">
+            <!-- About -->
+            <div class="footer-section">
+                <h2 class="footer-logo">Trek<span>ista</span></h2>
+                <p>Trekista is your premier trekking expedition partner. We host safe, exciting, and beautiful trekking
+                    journeys in the most scenic corners of India. Guided by experienced professionals.</p>
+            </div>
+
+            <!-- Quick Links -->
+            <div class="footer-section">
+                <h3>Quick Links</h3>
+                <ul>
+                    <li><a href="/">Home</a></li>
+                    {% if not current_user.is_authenticated %}
+                    <li><a href="{{ url_for('auth.login') }}">Login</a></li>
+                    <li><a href="{{ url_for('auth.register_user') }}">Register as Trekker</a></li>
+                    <li><a href="{{ url_for('auth.register_staff') }}">Register as Staff</a></li>
+                    {% endif %}
+                    {% if current_user.is_authenticated %}
+                    <li><a href ="{{ url_for('auth.logout') }}">logout</a></li>
+                    {% endif %}
+                </ul >
+                
+            </div>
+
+            <!-- Details -->
+            <div class="footer-section">
+                <h3>Trekking Regions</h3>
+                <ul>
+                    <li><a href="#">Uttarakhand</a></li>
+                    <li><a href="#">Himachal Pradesh</a></li>
+                    <li><a href="#">Kashmir Valley</a></li>
+                    <li><a href="#">Western Ghats</a></li>
+                    <li><a href="#">North East India</a></li>
+                </ul>
+            </div>
+
+            <!-- Contact -->
+            <div class="footer-section">
+                <h3>Contact Us</h3>
+                <p>📍 Indore, Madhya Pradesh</p>
+                <p>📞 +91 9876543210</p>
+                <p>📧 info@trekista.com</p>
+                <div class="social-icons">
+                    <a href="#">🌐</a>
+                    <a href="#">📘</a>
+                    <a href="#">📷</a>
+                    <a href="#">▶️</a>
+                </div>
+            </div>
+        </div>
+        <hr>
+        <div class="copyright">
+            <p>© 2026 Trekista. All Rights Reserved.</p>
+        </div>
+    </footer>
+
+
+</body>
+</html>
